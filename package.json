@@ -1,0 +1,15 @@
+{
+  "name": "grindywiz",
+  "version": "1.0.0",
+  "description": "",
+  "main": "secret.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.656.0",
+    "keybase-bot": "^3.6.1"
+  }
+}
