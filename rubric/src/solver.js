@@ -1,12 +1,21 @@
 const INSTANTIATION_FAILED = '_something bad happened_';
 const INSTANTIATION_SUCCEEDED = 'well at least the user passed in a function';
 
-class Anagram {
+const assert = require('assert');
+
+class Solver {
 
 
-	constructor(code) {
+	constructor(codeString, testCases) {
+		this.testCases = testCases;
+		this.code = codeString;
+
+		// Wrap code in parens for eval
+		if(this.code[0] !== '(' || this.code[this.code.length - 1] !== ')') {
+			this.code = `(${this.code})`;
+		}
 		try {
-			this.solution = eval(code); 
+			this.solution = eval(this.code); 
 		} catch(e) {
 			throw new Error(INSTANTIATION_FAILED);
 		}
@@ -17,13 +26,28 @@ class Anagram {
 	}
 
 
-	case1() {
+	score() {
 
-		const words = ['act', 'cat', 'actor', 'tractor', 'racecar'];
-		const output = this.solution.call(null, words)
-		console.log({
-			output
-		});
+		let maxScore = this.testCases.length;
+		let userScore = 0;
+		for(const {testCaseInput, expectedOutput} of this.testCases) {
+
+			try {
+				const solutionOutput = this.solution.apply(null, testCaseInput)
+				console.log({solutionOutput, expectedOutput})
+				assert.deepStrictEqual(expectedOutput, solutionOutput);
+				userScore++;	
+			} catch(e) {
+
+				console.error('Within score function', e)
+				// let us pass for now instead of rethrowing the error
+			}	
+			
+		}
+
+		return {
+			maxScore, userScore
+		}
 
 	}
 	
@@ -31,7 +55,9 @@ class Anagram {
 }
 
 
+exports.Solver = Solver;
 
+/*
 
 
 const main = async () => {
