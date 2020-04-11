@@ -10,34 +10,49 @@ Resources:
       Handler: handler.handler
       Runtime: nodejs12.x
       MemorySize: 256
-      Role: !GetAtt LambdaExecutionRole.Arn
+      Role: !GetAtt RubricLambdaExecutionRole.Arn
       VpcConfig:
         SecurityGroupIds:
           - sg-0b6a0a7984258dd98 # important: no outbound internet access
         SubnetIds: 
           - subnet-0640b3b0e9e1db0a7
 
-
-  LambdaExecutionRole:
+  RubricLambdaExecutionRole:
     Description: Creating service role in IAM for AWS Lambda
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
+        Version: '2012-10-17'
         Statement:
         - Effect: Allow
           Principal:
-            Service: [lambda.amazonaws.com]
-          Action: sts:AssumeRole
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
+            Service: 
+              - lambda.amazonaws.com
+          Action: 
+            - sts:AssumeRole
       Policies:
       - PolicyName: accessRubricHmacSecret
         PolicyDocument:
           Version: '2012-10-17'
           Statement:
           - Effect: Allow
-          Action:
-          - "secretsmanager:GetSecretValue"
-          Resource:
-          - "arn:aws:secretsmanager:us-east-1:589230162435:secret:grindywiz_rubric_hmac-4Ztwyo"
+            Action:
+            - "secretsmanager:GetSecretValue"
+            Resource:
+            - "arn:aws:secretsmanager:us-east-1:589230162435:secret:grindywiz_rubric_hmac-4Ztwyo"
+      - PolicyName: rubricLambdaLogs 
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - "xray:PutTraceSegments"
+            - "xray:PutTelemetryRecords"
+            - "xray:GetSamplingRules"
+            - "xray:GetSamplingTargets"
+            - "xray:GetSamplingStatisticSummaries"
+            - "logs:CreateLogGroup"
+            - "logs:CreateLogStream"
+            - "logs:PutLogEvents"
+            Resource:
+            - "*"
