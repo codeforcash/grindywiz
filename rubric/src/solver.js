@@ -4,22 +4,20 @@ const INSTANTIATION_SUCCEEDED = 'well at least the user passed in a function';
 const assert = require('assert');
 
 class Solver {
-
-
 	constructor(codeString, testCases) {
 		this.testCases = testCases;
 		this.code = codeString;
 
 		// Wrap code in parens for eval
-		if(this.code[0] !== '(' || this.code[this.code.length - 1] !== ')') {
+		if (this.code[0] !== '(' || this.code[this.code.length - 1] !== ')') {
 			this.code = `(${this.code})`;
 		}
 		try {
-			this.solution = eval(this.code); 
-		} catch(e) {
+			this.solution = eval(this.code);
+		} catch (e) {
 			throw new Error(INSTANTIATION_FAILED);
 		}
-		if(typeof(this.solution) !== 'function') {
+		if (typeof(this.solution) !== 'function') {
 			throw new Error(INSTANTIATION_FAILED);
 		}
 		return void 0;
@@ -27,31 +25,24 @@ class Solver {
 
 
 	score() {
-
-		let maxScore = this.testCases.length;
+		const maxScore = this.testCases.length;
 		let userScore = 0;
-		for(const {testCaseInput, expectedOutput} of this.testCases) {
-
+		for (const {testCaseInput, expectedOutput} of this.testCases) {
 			try {
-				const solutionOutput = this.solution.apply(null, testCaseInput)
-				console.log({solutionOutput, expectedOutput})
+				const solutionOutput = this.solution.apply(null, testCaseInput);
+				console.log({solutionOutput, expectedOutput});
 				assert.deepStrictEqual(expectedOutput, solutionOutput);
-				userScore++;	
-			} catch(e) {
-
-				console.error('Within score function', e)
+				userScore++;
+			} catch (e) {
+				console.error('Within score function', e);
 				// let us pass for now instead of rethrowing the error
-			}	
-			
+			}
 		}
 
 		return {
-			maxScore, userScore
-		}
-
+			maxScore, userScore,
+		};
 	}
-	
-
 }
 
 
@@ -70,14 +61,13 @@ const main = async () => {
 	const x = eval(`(${code})`)
 	console.log(typeof(x));
 	x.call(null)
-	
+
 	console.log(2)
 	const result = await encode(code).catch((e) => {
 		console.error(e);
 	});
 	console.log({result})
 }
-
 
 
 const encode = (code) => {
@@ -94,11 +84,11 @@ const encode = (code) => {
 					}]]
 				})
 		} catch(e) {
-			console.error(e); 
+			console.error(e);
 			throw e;
 		}
 
-		resolve(output.code);	
+		resolve(output.code);
 	});
 }
 
@@ -112,7 +102,7 @@ try {
 	// pass for now...
 }
 if(solver) {
-	
+
 	solver.case1();
 
 } else {
@@ -123,6 +113,6 @@ if(solver) {
 		solver
 	})
 
-} 
+}
 
-*/ 
+*/

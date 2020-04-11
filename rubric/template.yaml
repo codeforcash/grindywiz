@@ -7,10 +7,10 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ./src/
-      Handler: index.handler
+      Handler: handler.handler
       Runtime: nodejs12.x
       MemorySize: 256
-			Role: !GetAtt LambdaExecutionRole.Arn
+      Role: !GetAtt LambdaExecutionRole.Arn
       VpcConfig:
         SecurityGroupIds:
           - sg-0b6a0a7984258dd98 # important: no outbound internet access
@@ -31,3 +31,13 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
         - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
+      Policies:
+      - PolicyName: accessRubricHmacSecret
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+          Action:
+          - "secretsmanager:GetSecretValue"
+          Resource:
+          - "arn:aws:secretsmanager:us-east-1:589230162435:secret:grindywiz_rubric_hmac-4Ztwyo"

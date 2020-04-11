@@ -1,6 +1,6 @@
 # Development
 
-sam local invoke
+`echo '{"compressedSolutionString":"'Ā䈮䨞ૠ槼䫄ᐸ䈴Ⳅ妤ᒡᬎ潎䱃స崽勲姂పᤵȯ⸜㽷礭⨐磰'", "testIdInt":0}' | sam local invoke -e -`
 
 # Deployment
 

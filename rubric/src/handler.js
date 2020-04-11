@@ -1,50 +1,73 @@
-const url = 'https://raw.githubusercontent.com/awslabs/serverless-application-model/develop/examples/2016-10-31/hello_world/template.yaml'
+const fs = require('fs');
+const crypto = require('crypto');
+
+const kissc = require('./kissc');
+const {Solver} = require('./solver');
+const allTestCases = JSON.parse(fs.readFileSync('problems.json', 'utf8'));
 
 
-const http = require('https')
-exports.handler = async (event) => {
-		return {
-			statusCode: 200,
-			body: 'hi'
-		};
-    return httprequest().then((data) => {
-        const response = {
-            statusCode: 200,
-            body: JSON.stringify(data),
-        };
-    return response;
-    });
+const errorJSON = () => {
+	return {
+		statusCode: 400,
+	};
 };
-function httprequest() {
-     return new Promise((resolve, reject) => {
-        const options = {
-            host: 'raw.githubusercontent.com',
-            path: '/awslabs/serverless-application-model/develop/examples/2016-10-31/hello_world/template.yaml',
-            port: 443,
-            method: 'GET'
-        };
-        const req = http.request(options, (res) => {
-          if (res.statusCode < 200 || res.statusCode >= 300) {
-                return reject(new Error('statusCode=' + res.statusCode));
-            }
-            var body = [];
-            res.on('data', function(chunk) {
-                body.push(chunk);
-            });
-            res.on('end', function() {
-                try {
-                    body = Buffer.concat(body).toString();
-                } catch(e) {
-                    reject(e);
-                }
-                resolve(body);
-            });
-        });
-        req.on('error', (e) => {
-          reject(e.message);
-        });
-        // send the request
-       req.end();
-    });
-}
+
+
+const getHmacKey = () => {
+	return new Promise((resolve) => {
+		const AWS = require('aws-sdk');
+		const secretsManager = new AWS.SecretsManager();
+		secretsManager.getSecretValue({SecretId: 'grindywiz_rubric_hmac'}, function(err, data) {
+			if (err) {
+				console.error(err);
+				throw err;
+			} else {
+				if ('SecretString' in data) {
+					resolve(data.SecretString);
+				} else {
+					throw new Error();
+				}
+			}
+		});
+	});
+};
+
+
+const successJSON = async ({maxScore, userScore, solveTimeMilliseconds}) => {
+	const hmacKey = await getHmacKey();
+
+	const response = {
+		maxScore, userScore, solveTimeMilliseconds,
+	};
+	let responseBody = JSON.stringify(response);
+	response.hashSignature = crypto.createHmac('sha256', hmacKey).update(responseBody).digest('base64');
+	responseBody = JSON.stringify(response);
+
+	return {
+		statusCode: 200,
+		body: responseBody,
+	};
+};
+
+const bigIntNanosecondsToMilliseconds = (ns) => {
+	return parseInt((ns/BigInt(1e2)).toString(), 10)/1e4;
+};
+
+exports.handler = async (event) => {
+	try {
+		const problemId = event.testIdInt;
+		const code = kissc.decompress(event.compressedSolutionString);
+		const testSuite = allTestCases[problemId];
+		const startTime = process.hrtime.bigint();
+		const solver = new Solver(code, testSuite);
+		const {maxScore, userScore} = solver.score();
+		const endTime = process.hrtime.bigint();
+		const solveTimeNanoseconds = endTime - startTime;
+		const solveTimeMilliseconds = bigIntNanosecondsToMilliseconds(solveTimeNanoseconds);
+		return await successJSON({maxScore, userScore, solveTimeMilliseconds});
+	} catch (e) {
+		console.error(e);
+		return errorJSON();
+	}
+};
 
