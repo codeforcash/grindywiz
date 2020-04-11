@@ -1,0 +1,16 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Rubric grade for JavaScript code
+Resources:
+  RubricLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: s3://grindywiz/b67e4eb84cd1b0e495e0e9c0acf5ae9a
+      Handler: index.handler
+      Runtime: nodejs12.x
+      MemorySize: 256
+      VpcConfig:
+        SecurityGroupIds:
+        - sg-0b6a0a7984258dd98
+        SubnetIds:
+        - subnet-0640b3b0e9e1db0a7

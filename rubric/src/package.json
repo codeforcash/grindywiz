@@ -1,0 +1,19 @@
+{
+  "name": "rubric-lambda",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/core": "^7.9.0",
+    "@babel/plugin-transform-typescript": "^7.9.4",
+    "babel-loader": "^8.1.0",
+    "babel-plugin-const-enum": "0.0.5",
+    "babel-preset-minify": "^0.5.1",
+    "core-js": "^3.6.5"
+  }
+}
