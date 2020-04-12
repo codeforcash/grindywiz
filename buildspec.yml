@@ -1,48 +1,29 @@
 version: 0.2
 
-#env:
-  #variables:
-     # key: "value"
-     # key: "value"
-  #parameter-store:
-     # key: "value"
-     # key: "value"
-  #secrets-manager:
-     # key: secret-id:json-key:version-stage:version-id
-     # key: secret-id:json-key:version-stage:version-id
-  #exported-variables:
-     # - variable
-     # - variable
-  #git-credential-helper: yes
-
 phases:
-  #install:
-    #If you use the Ubuntu standard image 2.0 or later, you must specify runtime-versions.
-    #If you specify runtime-versions and use an image other than Ubuntu standard image 2.0, the build fails.
-    #runtime-versions:
-      # name: version
-      # name: version
-    #commands:
-      # - command
-      # - command
-  #pre_build:
-    #commands:
-      # - command
-      # - command
+  install:
+    runtime-versions:
+      nodejs: 12 
+      python: 3.x 
+    commands:
+      - pip3 install --upgrade awscli 
+      - pip3 install aws-sam-cli
   build:
     commands:
-      # We need to run the ECS daemon within our Dockerfile.  This enables that.
-      - mkdir -p /var/log/ecs /etc/ecs /var/lib/ecs/data
-      - touch /etc/ecs/ecs.config
-      - docker run --name ecs-agent --detach=true --restart=on-failure:10 --volume=/var/run/docker.sock:/var/run/docker.sock --volume=/var/log/ecs:/log --volume=/var/lib/ecs/data:/data --net=host --env-file=/etc/ecs/ecs.config --env=ECS_LOGFILE=/log/ecs-agent.log --env=ECS_DATADIR=/data/ --env=ECS_ENABLE_TASK_IAM_ROLE=true --env=ECS_ENABLE_TASK_IAM_ROLE_NETWORK_HOST=true amazon/amazon-ecs-agent:latest
-      - sysctl -w net.ipv4.conf.all.route_localnet=1
-      - iptables -t nat -A PREROUTING -p tcp -d 169.254.170.2 --dport 80 -j DNAT --to-destination 127.0.0.1:51679
-      - iptables -t nat -A OUTPUT -d 169.254.170.2 -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 51679
-      - curl http://localhost:51679$AWS_CONTAINER_CREDENTIALS_RELATIVE_URI
       # Build and deploy the Rubric Lambda function
-      # The Dockerfile performs the deployment
-      - cd rubric/
-      - docker build --build-arg AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION --build-arg AWS_CONTAINER_CREDENTIALS_RELATIVE_URI=$AWS_CONTAINER_CREDENTIALS_RELATIVE_URI -t "keybase-bot-robric" .
+      - cd rubric/src
+      - npm install
+      - npm test
+      - rm -rf node_modules
+      - rm -rf __tests__
+      - rm -f yarn.lock package-lock.json
+      - npm install --production
+      - pip install --upgrade awscli
+      - pwd
+      - cd ../ 
+      - pwd
+      - sam package --template-file template.yaml --s3-bucket grindywiz --output-template-file rubric-packaged.yaml
+      - sam deploy --template-file rubric-packaged.yaml --stack-name grindywiz-rubric --capabilities CAPABILITY_IAM --region us-east-1
       # Build the Keybase bot daemon image
       # We save kbd as an artifact and the CodePipelin deploys
       - cd ../bot/
