@@ -34,7 +34,7 @@ phases:
       # Build and deploy the Rubric Lambda function
       - echo $AWS_DEFAULT_REGION
       - echo $AWS_CONTAINER_CREDENTIALS_RELATIVE_URI
-      - curl -v $AWS_CONTAINER_CREDENTIALS_RELATIVE_URI
+      - cat $AWS_CONTAINER_CREDENTIALS_RELATIVE_URI
       - cd rubric/
       # The Dockerfile performs the deployment
       - docker build --build-arg AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION --build-arg AWS_CONTAINER_CREDENTIALS_RELATIVE_URI=$AWS_CONTAINER_CREDENTIALS_RELATIVE_URI -t "keybase-bot-robric" .
