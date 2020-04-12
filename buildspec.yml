@@ -34,7 +34,7 @@ phases:
       # Build and deploy the Rubric Lambda function
       - cd rubric/
       # The Dockerfile performs the deployment
-      - docker build -t "keybase-bot-rubric" .
+      - docker build --build-arg AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION --build-arg AWS_CONTAINER_CREDENTIALS_RELATIVE_URI=$AWS_CONTAINER_CREDENTIALS_RELATIVE_URI -t "keybase-bot-robric" .
       # Build the Keybase bot daemon image
       - cd ../bot/
       - docker build -t "keybase-docker" .
