@@ -31,7 +31,12 @@ phases:
       # - command
   build:
     commands:
-      - cd bot/
+      # Build and deploy the Rubric Lambda function
+      - cd rubric/
+      # The Dockerfile performs the deployment
+      - docker build -t "keybase-bot-rubric" .
+      # Build the Keybase bot daemon image
+      - cd ../bot/
       - docker build -t "keybase-docker" .
       - docker save -o kbd.tar "keybase-docker"
   #post_build:

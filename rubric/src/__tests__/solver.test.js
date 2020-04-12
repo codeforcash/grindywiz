@@ -8,8 +8,8 @@ test('Load up the test cases and validate input format', () => {
 	for(const problemId in allTestCases) {
 		const testSuite = allTestCases[problemId]; 
 		for(const testCase of testSuite) {
-			expect('testCaseInput' in testCase).toBeTruthy;
-			expect('expectedOutput' in testCase).toBeTruthy;
+			expect('testCaseInput' in testCase).toBeTruthy();
+			expect('expectedOutput' in testCase).toBeTruthy();
 		}
 	}
 

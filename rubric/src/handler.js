@@ -34,8 +34,12 @@ const getHmacKey = () => {
 
 
 const successJSON = async ({maxScore, userScore, solveTimeMilliseconds}) => {
-	const hmacKey = await getHmacKey();
-
+	const hmacKey = await getHmacKey().catch((e) => {
+		console.error('Could not get HMAC key.', {e});
+	});
+	if(!hmacKey) {
+		return errorJSON();
+	}
 	const response = {
 		maxScore, userScore, solveTimeMilliseconds,
 	};
@@ -57,6 +61,7 @@ exports.handler = async (event) => {
 	try {
 		const problemId = event.testIdInt;
 		const code = kissc.decompress(event.compressedSolutionString);
+		console.log({event, code})
 		const testSuite = allTestCases[problemId];
 		const startTime = process.hrtime.bigint();
 		const solver = new Solver(code, testSuite);

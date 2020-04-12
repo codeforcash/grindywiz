@@ -8,17 +8,19 @@ class Solver {
 		this.testCases = testCases;
 		this.code = codeString;
 
+		console.log({codeString})
 		// Wrap code in parens for eval
-		if (this.code[0] !== '(' || this.code[this.code.length - 1] !== ')') {
+		if (this.code[0] !== '(' && this.code[this.code.length - 1] !== ')') {
 			this.code = `(${this.code})`;
 		}
 		try {
 			this.solution = eval(this.code);
 		} catch (e) {
-			throw new Error(INSTANTIATION_FAILED);
+			throw new Error(INSTANTIATION_FAILED, e);
 		}
 		if (typeof(this.solution) !== 'function') {
-			throw new Error(INSTANTIATION_FAILED);
+			console.error({solution: this.solution, typeOf: typeof(this.solution)})
+			throw new Error('code is not a function');
 		}
 		return void 0;
 	}
