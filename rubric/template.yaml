@@ -39,6 +39,8 @@ Resources:
           - Effect: Allow
             Action:
             - "secretsmanager:GetSecretValue"
+            Resource:
+            - "arn:aws:secretsmanager:us-east-1:589230162435:secret:grindywiz_rubric_hmac-4Ztwyo"
       - PolicyName: rubricLambdaLogs 
         PolicyDocument:
           Version: '2012-10-17'
@@ -53,6 +55,8 @@ Resources:
             - "logs:CreateLogGroup"
             - "logs:CreateLogStream"
             - "logs:PutLogEvents"
+            Resource:
+            - "*"
       - PolicyName: rubricDeployment
         PolicyDocument:
           Version: '2012-10-17'
@@ -72,3 +76,7 @@ Resources:
             - "iam:DeleteRolePolicy"
             - "iam:TagRole"
             - "iam:UntagRole"
+            Resource:
+            - !Sub "arn:aws:iam::${AWS::AccountId}:role/${AWS::StackName}-RubricLambdaRole-*"
+            - !Sub "arn:aws:iam::${AWS::AccountId}:role/${AWS::StackName}-RubricLambdaExecutionRole-*"
+            - !Sub "arn:aws:sts::${AWS::AccountId}:assumed-role/codebuild-GrindyWiz-codebuild-service-role/*"
