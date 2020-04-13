@@ -3,14 +3,14 @@ Transform: AWS::Serverless-2016-10-31
 Description: Rubric grader for JavaScript code 
 
 Resources:
-  RubricLambda:
+  GrindyWizRubricLambda:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ./src/
       Handler: handler.handler
       Runtime: nodejs12.x
       MemorySize: 256
-      Role: !GetAtt RubricLambdaExecutionRole.Arn
+      Role: !GetAtt GrindyWizRubricLambdaExecutionRole.Arn
       Tracing: Active
       VpcConfig:
         SecurityGroupIds:
@@ -18,7 +18,7 @@ Resources:
         SubnetIds: 
           - subnet-0640b3b0e9e1db0a7
 
-  RubricLambdaExecutionRole:
+  GrindyWizRubricLambdaExecutionRole:
     Description: Creating service role in IAM for AWS Lambda
     Type: AWS::IAM::Role
     Properties:
@@ -77,6 +77,6 @@ Resources:
             - "iam:TagRole"
             - "iam:UntagRole"
             Resource:
-            - !Sub "arn:aws:iam::${AWS::AccountId}:role/${AWS::StackName}-RubricLambdaRole-*"
-            - !Sub "arn:aws:iam::${AWS::AccountId}:role/${AWS::StackName}-RubricLambdaExecutionRole-*"
+            - !Sub "arn:aws:iam::${AWS::AccountId}:role/${AWS::StackName}-GrindyWizRubricLambdaRole-*"
+            - !Sub "arn:aws:iam::${AWS::AccountId}:role/${AWS::StackName}-GrindyWizRubricLambdaExecutionRole-*"
             - !Sub "arn:aws:sts::${AWS::AccountId}:assumed-role/codebuild-GrindyWiz-codebuild-service-role/*"
