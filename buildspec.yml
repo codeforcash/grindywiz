@@ -35,4 +35,4 @@ phases:
       # - command
 artifacts:
   files:
-     - kbd.tar
+     - bot/kbd.tar

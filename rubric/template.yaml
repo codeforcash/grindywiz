@@ -57,6 +57,21 @@ Resources:
             - "logs:PutLogEvents"
             Resource:
             - "*"
+      - PolicyName: "AWSLambdaVPCAccessExecutionRole"
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+          - Effect: "Allow"
+            Action:
+            - "logs:CreateLogGroup"
+            - "logs:CreateLogStream"
+            - "logs:PutLogEvents"
+            - "ec2:CreateNetworkInterface"
+            - "ec2:DescribeNetworkInterfaces"
+            - "ec2:DetachNetworkInterface"
+            - "ec2:DeleteNetworkInterface"
+            Resource:
+            - "*"
       - PolicyName: rubricDeployment
         PolicyDocument:
           Version: '2012-10-17'
