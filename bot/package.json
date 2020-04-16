@@ -2,14 +2,20 @@
   "name": "grindywiz",
   "version": "1.0.0",
   "description": "",
-  "main": "secret.js",
+  "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@babel/core": "^7.9.0",
+    "@babel/plugin-transform-typescript": "^7.9.4",
     "aws-sdk": "^2.656.0",
+    "babel-loader": "^8.1.0",
+    "babel-plugin-const-enum": "0.0.5",
+    "babel-preset-minify": "^0.5.1",
+    "core-js": "^3.6.5",
     "keybase-bot": "^3.6.1"
   }
 }

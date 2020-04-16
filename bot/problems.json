@@ -1,0 +1,11 @@
+{
+	"0": [
+		{
+			"testCaseInput": [],
+			"expectedOutput": "Who's there?",
+			"functionName": "knockKnock",
+			"returnType": "string",
+			"inputParams": []
+		}
+	]
+}

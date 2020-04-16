@@ -1,20 +1,55 @@
+
+const crypto = require('crypto');
 var AWS = require('aws-sdk'),
 	region = "us-east-1",
-	secretName = "grindywiz_keybase",
+	keybaseCredentialsSecretName = "grindywiz_keybase",
+	lambdaHmacSecretName = 'grindywiz_rubric_hmac',
 	secret,
 	decodedBinarySecret;
 
 //Create a Secrets Manager client
-var client = new AWS.SecretsManager({
+const secretsManager = new AWS.SecretsManager({
 	region: region
 });
 
+const getHmacKey = () => {
+	return new Promise((resolve) => {
+		secretsManager.getSecretValue({SecretId: lambdaHmacSecretName}, function(err, data) {
+			if (err) {
+				console.error(err);
+				throw err;
+			} else {
+				if ('SecretString' in data) {
+					resolve(data.SecretString);
+				} else {
+					throw new Error();
+				}
+			}
+		});
+	});
+};
+
+const validateLambdaPayload = (resultsString, signature) => {
+
+	return new Promise(async (resolve) => {
+
+		const hmacKey = await getHmacKey().catch((e) => {
+			console.error('Could not get HMAC key.', {e});
+		});
+		if(!hmacKey) {
+			throw new Error('');	
+		}
+		resolve(signature === crypto.createHmac('sha256', hmacKey).update(resultsString).digest('base64'));
+
+	})
+
+}
 
 const getKeybaseCredentials = () => { 
 
 	return new Promise((resolve) => {
 
-		client.getSecretValue({SecretId: secretName}, function(err, data) {
+		secretsManager.getSecretValue({SecretId: keybaseCredentialsSecretName}, function(err, data) {
 			if (err) {
 				if (err.code === 'DecryptionFailureException')
 				// Secrets Manager can't decrypt the protected secret text using the provided KMS key.
@@ -56,4 +91,4 @@ const getKeybaseCredentials = () => {
 
 }
 
-module.exports = getKeybaseCredentials;
+module.exports = { getKeybaseCredentials, validateLambdaPayload };

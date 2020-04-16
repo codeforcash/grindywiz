@@ -41,7 +41,7 @@ const successJSON = async ({maxScore, userScore, solveTimeMilliseconds}) => {
 		return errorJSON();
 	}
 	const response = {
-		maxScore, userScore, solveTimeMilliseconds,
+		maxScore, solveTimeMilliseconds, userScore
 	};
 	let responseBody = JSON.stringify(response);
 	response.hashSignature = crypto.createHmac('sha256', hmacKey).update(responseBody).digest('base64');

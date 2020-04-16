@@ -72,27 +72,6 @@ const main = async () => {
 }
 
 
-const encode = (code) => {
-
-	console.log({code})
-	return new Promise(async (resolve) => {
-
-		let output;
-		try {
-				output = require("@babel/core").transform(code, {
-					"plugins": ["const-enum", "@babel/transform-typescript"],
-					"presets": [["minify", {
-						"keepFnName": true
-					}]]
-				})
-		} catch(e) {
-			console.error(e);
-			throw e;
-		}
-
-		resolve(output.code);
-	});
-}
 
 
 main()
