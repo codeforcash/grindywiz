@@ -13,7 +13,7 @@ const secretsManager = new AWS.SecretsManager({
 	region: region
 });
 
-const getHmacKey = () => {
+const getHmacKey = (): Promise<string> => {
 	return new Promise((resolve) => {
 		secretsManager.getSecretValue({SecretId: lambdaHmacSecretName}, function(err, data) {
 			if (err) {
@@ -21,7 +21,7 @@ const getHmacKey = () => {
 				throw err;
 			} else {
 				if ('SecretString' in data) {
-					resolve(data.SecretString);
+					resolve(JSON.parse(data.SecretString).key);
 				} else {
 					throw new Error();
 				}
@@ -30,18 +30,23 @@ const getHmacKey = () => {
 	});
 };
 
-const validateLambdaPayload = (resultsString: string, signature: string) => {
+const validateLambdaPayload = (resultsString: string, payloadSignature: string) => {
 
 	return new Promise(async (resolve) => {
 
-		const hmacKey = await getHmacKey().catch((e) => {
+		console.log({resultsString, payloadSignature});
+		const hmacKey: string | void = await getHmacKey().catch((e) => {
 			console.error('Could not get HMAC key.', {e});
 		});
 		if(!hmacKey) {
 			throw new Error('');	
 		}
+		const hmac = crypto.createHmac('sha256', hmacKey);
+		const generatedSignature = hmac.update(resultsString).digest('base64');
+		console.log({hmacKey, generatedSignature, payloadSignature});
+
 		// @ts-ignore
-		resolve(signature === crypto.createHmac('sha256', hmacKey).update(resultsString).digest('base64'));
+		resolve(payloadSignature === generatedSignature);
 
 	})
 

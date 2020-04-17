@@ -3,6 +3,8 @@
 
 bot/build/*.js
 bot/build/*.js.map
+bot/build/package-lock.json
+bot/build/package.json
 
 # build artifact
 rubric-packaged.yaml

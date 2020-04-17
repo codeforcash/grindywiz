@@ -72,7 +72,10 @@ export default class SolutionGrader {
 					throw err;
 				}
 
-				const logs = new Buffer(data.LogResult, 'base64').toString(); 
+
+				console.log({data});
+
+				const logs = Buffer.from(data.LogResult, 'base64').toString(); 
 				const memoryUsedMatch = logs.match(/\tMax Memory Used:\s(\S+\s\S+)\t\n/)
 				let bytesUsed;
 				if(memoryUsedMatch) { 
@@ -80,17 +83,25 @@ export default class SolutionGrader {
 					bytesUsed = convertHumanReadableToBytes(memory)
 				}
 
+
 				// @ts-ignore
-				if(data.Payload.statusCode !== 200) {
+				const payload = JSON.parse(data.Payload);
+
+				if(payload.statusCode !== 200) {
 					throw new Error('Something went wrong')
 				}
-				// @ts-ignore
-				const results = JSON.parse(data.Payload.body);
+
+
+				const results = JSON.parse(payload.body);
+
 				const { maxScore, userScore, solveTimeMilliseconds, hashSignature } = results;
 
 				const validPayload = await validateLambdaPayload(JSON.stringify({
 					maxScore, solveTimeMilliseconds, userScore 
-				}, hashSignature));
+				}), hashSignature).catch((validationError) => {
+				
+						console.error(validationError);
+				});
 
 				if(!validPayload) {
 					throw new Error('Something went wrong')

@@ -23,7 +23,7 @@ const getHmacKey = () => {
 				throw err;
 			} else {
 				if ('SecretString' in data) {
-					resolve(data.SecretString);
+					resolve(JSON.parse(data.SecretString).key);
 				} else {
 					throw new Error();
 				}
