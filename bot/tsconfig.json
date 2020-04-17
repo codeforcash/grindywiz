@@ -1,0 +1,15 @@
+{
+	"compilerOptions": {
+		"removeComments": true,
+		"preserveConstEnums": true,
+		"outDir": "build/",
+		"sourceMap": true
+	},
+	"include": [
+		"src/**/*"
+	],
+	"exclude": [
+		"node_modules",
+		"**/*.spec.ts"
+	]
+}

@@ -5,7 +5,8 @@
 			"expectedOutput": "Who's there?",
 			"functionName": "knockKnock",
 			"returnType": "string",
-			"inputParams": []
+			"inputParams": [],
+			"statement": "Write a function to respond to 'Knock Knock' with 'Who's there?'"
 		}
 	]
 }

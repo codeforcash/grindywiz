@@ -1,5 +1,7 @@
 const kissc = require('./kissc');
 const { validateLambdaPayload } = require('./secret');
+import { SolutionGrade } from './types/grindywiz';
+import { Lambda } from 'aws-sdk';
 
 const convertHumanReadableToBytes = humanReadable => {
 
@@ -36,25 +38,28 @@ const convertHumanReadableToBytes = humanReadable => {
 
 }
 
-class SolutionGrader {
+export default class SolutionGrader {
+
+	lambda: Lambda;
+	lambdaFunctionName: string;
 
 	constructor(lambda, functionName) {
 		this.lambda = lambda;
-		this.functionName = functionName;
+		this.lambdaFunctionName = functionName;
 	}
 
-	gradeSolution(code, currentProblem) {
+	gradeSolution(code, currentProblem): Promise<SolutionGrade> {
 		const compressedCode = kissc.compress(code);
 		return new Promise((resolve) => {
 
 			this.lambda.invoke({
-				FunctionName: this.functionName,
+				FunctionName: this.lambdaFunctionName,
 				LogType: 'Tail', 
 				Payload: JSON.stringify({ 
 					"compressedSolutionString": compressedCode, 
 					"testIdInt": currentProblem 
 				})
-			}, function(err, data) { 
+			}, async function(err, data) { 
 				if(err) {
 					console.error(err); 
 					throw err;
@@ -68,9 +73,11 @@ class SolutionGrader {
 					bytesUsed = convertHumanReadableToBytes(memory)
 				}
 
+				// @ts-ignore
 				if(data.Payload.statusCode !== 200) {
 					throw new Error('Something went wrong')
 				}
+				// @ts-ignore
 				const results = JSON.parse(data.Payload.body);
 				const { maxScore, userScore, solveTimeMilliseconds, hashSignature } = results;
 
@@ -94,5 +101,3 @@ class SolutionGrader {
 	}
 
 }
-
-module.exports = SolutionGrader;

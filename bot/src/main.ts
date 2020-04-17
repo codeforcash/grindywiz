@@ -1,4 +1,4 @@
-const Bot = require('./bot');
+import Bot from './bot'
 
 
 const main = async () => {

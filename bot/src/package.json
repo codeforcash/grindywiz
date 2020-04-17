@@ -17,5 +17,8 @@
     "babel-preset-minify": "^0.5.1",
     "core-js": "^3.6.5",
     "keybase-bot": "^3.6.1"
+  },
+  "devDependencies": {
+    "@types/node": "^13.11.1"
   }
 }

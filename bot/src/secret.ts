@@ -1,5 +1,6 @@
 
-const crypto = require('crypto');
+import * as crypto from 'crypto';
+
 var AWS = require('aws-sdk'),
 	region = "us-east-1",
 	keybaseCredentialsSecretName = "grindywiz_keybase",
@@ -29,7 +30,7 @@ const getHmacKey = () => {
 	});
 };
 
-const validateLambdaPayload = (resultsString, signature) => {
+const validateLambdaPayload = (resultsString: string, signature: string) => {
 
 	return new Promise(async (resolve) => {
 
@@ -39,6 +40,7 @@ const validateLambdaPayload = (resultsString, signature) => {
 		if(!hmacKey) {
 			throw new Error('');	
 		}
+		// @ts-ignore
 		resolve(signature === crypto.createHmac('sha256', hmacKey).update(resultsString).digest('base64'));
 
 	})
