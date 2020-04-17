@@ -5,8 +5,8 @@ export declare type ProblemList = {
 type StringOrNumber = string | number
 
 interface ProblemDescription {
-	testCaseInput: any[];
-	expectedOutput: any;
+	testCaseInputs: any[];
+	expectedOutputs: any;
 	functionName: string;
 	returnType: string;
 	inputParams: any[];

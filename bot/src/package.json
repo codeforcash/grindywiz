@@ -11,12 +11,14 @@
   "dependencies": {
     "@babel/core": "^7.9.0",
     "@babel/plugin-transform-typescript": "^7.9.4",
+    "@babel/preset-env": "^7.9.5",
     "aws-sdk": "^2.656.0",
     "babel-loader": "^8.1.0",
     "babel-plugin-const-enum": "0.0.5",
     "babel-preset-minify": "^0.5.1",
     "core-js": "^3.6.5",
-    "keybase-bot": "^3.6.1"
+    "keybase-bot": "^3.6.1",
+    "source-map-support": "^0.5.16"
   },
   "devDependencies": {
     "@types/node": "^13.11.1"

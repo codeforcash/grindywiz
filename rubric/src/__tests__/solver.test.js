@@ -1,16 +1,20 @@
 const { Solver } = require ('../solver');
 const fs = require('fs')
-const allTestCases = JSON.parse(fs.readFileSync('problems.json', 'utf8'))
+
+ 
+let problemsFile = 'problems.json';
+ 
+
+const allTestCases = JSON.parse(fs.readFileSync(problemsFile, 'utf8'))
 const assert = require('assert');
 
 test('Load up the test cases and validate input format', () => {
 
 	for(const problemId in allTestCases) {
 		const testSuite = allTestCases[problemId]; 
-		for(const testCase of testSuite) {
-			expect('testCaseInput' in testCase).toBeTruthy();
-			expect('expectedOutput' in testCase).toBeTruthy();
-		}
+		expect('testCaseInputs' in testSuite).toBeTruthy();
+		expect('expectedOutputs' in testSuite).toBeTruthy();
+		expect(testSuite.testCaseInputs.length).toBe(testSuite.expectedOutputs.length);
 	}
 
 })

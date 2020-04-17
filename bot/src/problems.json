@@ -1,12 +1,10 @@
 {
-	"0": [
-		{
-			"testCaseInput": [],
-			"expectedOutput": "Who's there?",
-			"functionName": "knockKnock",
-			"returnType": "string",
-			"inputParams": [],
-			"statement": "Write a function to respond to 'Knock Knock' with 'Who's there?'"
-		}
-	]
+	"0": {
+		"testCaseInputs": [[]],
+		"expectedOutputs": ["Who's there?"],
+		"functionName": "knockKnock",
+		"returnType": "string",
+		"inputParams": [],
+		"statement": "Write a function to respond to 'Knock Knock' with 'Who's there?'"
+	}
 }

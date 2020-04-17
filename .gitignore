@@ -1,5 +1,8 @@
 **/node_modules
 *.swp
 
+bot/build/*.js
+bot/build/*.js.map
+
 # build artifact
 rubric-packaged.yaml

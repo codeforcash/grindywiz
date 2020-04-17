@@ -14,7 +14,7 @@ const minify = (code) => {
 		try {
 				output = require("@babel/core").transform(code, {
 					"plugins": ["const-enum", "@babel/transform-typescript"],
-					"presets": [["minify", {
+					"presets": [["@babel/env", {}],["minify", {
 						"keepFnName": true
 					}]]
 				})
@@ -25,6 +25,7 @@ const minify = (code) => {
 		resolve(output.code);
 	});
 }
+
 
 export default class Bot {
 	
@@ -38,7 +39,13 @@ export default class Bot {
 	constructor() {
 		this.bot = new KeybaseBot();	
 		this.users = {};
-		this.problems = JSON.parse(fs.readFileSync('problems.json', 'utf8'));
+		const problemsJson = `${process.cwd()}/problems.json`;
+		console.log({problemsJson})
+		try {
+			this.problems = JSON.parse(fs.readFileSync(problemsJson, 'utf8'));
+		} catch(e) {
+			this.problems = JSON.parse(fs.readFileSync(`../${fs.readlinkSync(problemsJson)}`, 'utf8'));
+		}
 	}
 
 	async init() {
@@ -110,7 +117,8 @@ export default class Bot {
 				body: "It's been 60 seconds since your most recent solution.  Feel free to submit another!" });
 		}, 60 * 1000);
 
-		minify(body).then(async (code) => {
+		const userSolution = body.replace(/^```/,'').replace(/```$/,'');
+		minify(userSolution).then(async (code) => {
 		
 			this.bot.chat.react(conversationId, messageId, ':+1:') 
 			this.bot.chat.send(conversationId, {
@@ -159,6 +167,9 @@ export default class Bot {
 			return;
 		}
 
+		console.log(this.problems[problem]);
+		console.log('-')
+		console.log(this.problems[problem.toString()]);
 		const { statement, functionName, inputParams, returnType } = this.problems[problem];
 		let body = `${statement}\n\nPlease name your function \`${functionName}\` and define your code using Keybase style for code formatting; `;
 		body = body.concat(`i.e., wrapped in triple backticks.\n\n`); 

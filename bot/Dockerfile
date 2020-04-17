@@ -4,4 +4,5 @@ WORKDIR /app
 COPY src/package*.json ./
 RUN npm install # or use yarn
 COPY build/. .
-CMD node /app/main.js
+COPY src/problems.json .
+CMD node -r source-map-support/register /app/main.js

@@ -52,6 +52,13 @@ export default class SolutionGrader {
 		const compressedCode = kissc.compress(code);
 		return new Promise((resolve) => {
 
+
+			console.log({
+				compressedCode, 
+				currentProblem,
+				fxn: this.lambdaFunctionName
+			});
+
 			this.lambda.invoke({
 				FunctionName: this.lambdaFunctionName,
 				LogType: 'Tail', 

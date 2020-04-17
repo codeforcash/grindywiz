@@ -1,24 +1,30 @@
 const INSTANTIATION_FAILED = '_something bad happened_';
 const INSTANTIATION_SUCCEEDED = 'well at least the user passed in a function';
 
+const { VM, VMScript } = require('vm2');
+
 const assert = require('assert');
 
 class Solver {
 	constructor(codeString, testCases) {
 		this.testCases = testCases;
 		this.code = codeString;
+		this.functionName = this.testCases.functionName;
+		this.vm = new VM();
 
 		console.log({codeString})
 		// Wrap code in parens for eval
-		if (this.code[0] !== '(' && this.code[this.code.length - 1] !== ')') {
-			this.code = `(${this.code})`;
-		}
 		try {
-			this.solution = eval(this.code);
+			const script = new VMScript(this.code);
+			this.vm.run(script);
 		} catch (e) {
-			throw new Error(INSTANTIATION_FAILED, e);
+			console.error({
+				e,
+				codeString
+			})
+			throw new Error(INSTANTIATION_FAILED);
 		}
-		if (typeof(this.solution) !== 'function') {
+		if (this.vm.run(`typeof(${this.functionName})`) !== 'function') {
 			console.error({solution: this.solution, typeOf: typeof(this.solution)})
 			throw new Error('code is not a function');
 		}
@@ -27,11 +33,14 @@ class Solver {
 
 
 	score() {
-		const maxScore = this.testCases.length;
+		const maxScore = this.testCases.expectedOutputs.length;
 		let userScore = 0;
-		for (const {testCaseInput, expectedOutput} of this.testCases) {
+		const {testCaseInputs, expectedOutputs} = this.testCases;
+		for(let i = 0; i < testCaseInputs.length; i++) {	
+			const testCaseInput = testCaseInputs[i];
+			const expectedOutput = expectedOutputs[i];
 			try {
-				const solutionOutput = this.solution.apply(null, testCaseInput);
+				const solutionOutput = this.vm.run(`${this.functionName}.apply(null, ${testCaseInput})`)
 				console.log({solutionOutput, expectedOutput});
 				assert.deepStrictEqual(expectedOutput, solutionOutput);
 				userScore++;
@@ -49,51 +58,3 @@ class Solver {
 
 
 exports.Solver = Solver;
-
-/*
-
-
-const main = async () => {
-
-
-	console.log(1)
-
-//	const code = `function myman() { console.log('hello, world');return 3;}`
-	let code = 'Function`$${atob`YWxlcnQoMSk=`}```'
-	const x = eval(`(${code})`)
-	console.log(typeof(x));
-	x.call(null)
-
-	console.log(2)
-	const result = await encode(code).catch((e) => {
-		console.error(e);
-	});
-	console.log({result})
-}
-
-
-
-
-main()
-/*
-let solver;
-try {
-	solver = new Anagram(`(${code})`);
-} catch(e) {
-	// pass for now...
-}
-if(solver) {
-
-	solver.case1();
-
-} else {
-
-
-	// This is where we indicate failure and score 0
-	console.log({
-		solver
-	})
-
-}
-
-*/
