@@ -12,6 +12,8 @@ phases:
     commands:
       # Build and deploy the Rubric Lambda function
       - cd rubric/src
+      - unlink problems.json
+      - cp ../../bot/src/problems.json .
       - npm install
       - npm test
       - rm -rf node_modules
@@ -26,13 +28,13 @@ phases:
       - sam deploy --template-file rubric-packaged.yaml --stack-name grindywiz-rubric-lambda --capabilities CAPABILITY_IAM --region us-east-1
       # Build the Keybase bot daemon image
       # We save kbd as an artifact and the CodePipelin deploys
-      - cd ../bot/
-      - docker build -t "keybase-docker" .
-      - docker save -o kbd.tar "keybase-docker"
+ #      - cd ../bot/
+ #      - docker build -t "keybase-docker" .
+ #      - docker save -o kbd.tar "keybase-docker"
   #post_build:
     #commands:
       # - command
       # - command
-artifacts:
-  files:
-     - bot/kbd.tar
+#artifacts:
+#  files:
+#     - bot/kbd.tar
