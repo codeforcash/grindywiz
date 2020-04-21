@@ -132,7 +132,7 @@ export default class Bot {
 			}).catch((e) => {
 
 				this.bot.chat.send(conversationId, {
-					body: 'Something went wrong with the bot or your code. Sorry!  Please wait 60 seconds before resubmitting.'
+					body: 'Something went wrong with the bot or your code.  Have you tried validating it locally?  Is it efficient with respect to computational complexity?  Please wait 60 seconds before resubmitting.'
 				});
 
 			});
