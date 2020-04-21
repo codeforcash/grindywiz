@@ -77,10 +77,10 @@ export default class SolutionGrader {
 
 				const logs = Buffer.from(data.LogResult, 'base64').toString(); 
 				const memoryUsedMatch = logs.match(/\tMax Memory Used:\s(\S+\s\S+)\t\n/)
-				let bytesUsed;
+				let bytesUsed, humanReadableMemoryUsage;
 				if(memoryUsedMatch) { 
-					const memory = memoryUsedMatch[1] 
-					bytesUsed = convertHumanReadableToBytes(memory)
+					humanReadableMemoryUsage = memoryUsedMatch[1] 
+					bytesUsed = convertHumanReadableToBytes(humanReadableMemoryUsage)
 				}
 
 
@@ -108,7 +108,7 @@ export default class SolutionGrader {
 				} 
 				
 				resolve({
-					userScore, maxScore, solveTimeMilliseconds, bytesUsed
+					userScore, maxScore, solveTimeMilliseconds, bytesUsed, humanReadableMemoryUsage
 				})
 
 

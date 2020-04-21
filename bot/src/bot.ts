@@ -6,7 +6,7 @@ const { getKeybaseCredentials } = require('./secret');
 import SolutionGrader from './solution-grader';
 
 import { MsgSummary, ChatChannel } from './node_modules/keybase-bot/lib/types/chat1/index.js'
-import { SolutionGrade, UserList, ProblemList, UserData } from './types/grindywiz'
+import { TimerList, SolutionGrade, UserList, ProblemList, UserData } from './types/grindywiz'
 
 const minify = (code) => {
 	return new Promise(async (resolve) => {
@@ -30,6 +30,7 @@ const minify = (code) => {
 export default class Bot {
 	
 	bot: KeybaseBot;
+	timers: TimerList;
 	users: UserList;
 	problems: ProblemList;
 	lambdaFunctionName: string;
@@ -87,9 +88,8 @@ export default class Bot {
 			return;
 		}
 		let userState = this.getUserState(username);
-		if(userState.currentProblem === null) {
-			this.users[username].currentProblem = 0;
-			this.shareProblem(username, 0); 
+		if(userState.awaitingProblem) {
+			this.shareProblem(username, userState.currentProblem); 
 			return;
 		}
 		// check that body matches a regex - ```[^`]+[functionName][^`]+```		
@@ -112,7 +112,7 @@ export default class Bot {
 
 		this.users[username].lastSolutionReceivedTime = process.hrtime();
 
-		setTimeout(() => {
+		this.timers[username] = setTimeout(() => {
 			this.bot.chat.send(conversationId, {
 				body: "It's been 60 seconds since your most recent solution.  Feel free to submit another!" });
 		}, 60 * 1000);
@@ -153,8 +153,9 @@ export default class Bot {
 	getUserState (username): UserData {
 		if(!(username in this.users)) {
 			this.users[username] = {
-				currentProblem: null,
-				lastSolutionReceivedTime: null
+				currentProblem: 0,
+				lastSolutionReceivedTime: null,
+				awaitingProblem: true 
 			}
 		}
 		return this.users[username];
@@ -166,10 +167,7 @@ export default class Bot {
 			this.bot.chat.send(this.makeChannel(username), { body });
 			return;
 		}
-
-		console.log(this.problems[problem]);
-		console.log('-')
-		console.log(this.problems[problem.toString()]);
+		this.users[username].awaitingProblem = false;
 		const { statement, functionName, inputParams, returnType } = this.problems[problem];
 		let body = `${statement}\n\nPlease name your function \`${functionName}\` and define your code using Keybase style for code formatting; `;
 		body = body.concat(`i.e., wrapped in triple backticks.\n\n`); 
@@ -190,10 +188,16 @@ export default class Bot {
 		let body = '';
 		if(feedback.userScore === feedback.maxScore) {
 			body = body.concat("Well done! A perfect score.\n\n");
-			body = body.concat("Memory used: ${feedback.bytesUsed} bytes\n");
-			body = body.concat("Solve time: ${feedback.solveTimeMilliseconds}ms")
+			body = body.concat(`Memory used: \`${feedback.humanReadableMemoryUsage}\` (\`${feedback.bytesUsed} bytes\`) – including overhead\n`);
+			body = body.concat(`Solve time: \`${feedback.solveTimeMilliseconds}ms\``)
 			this.bot.chat.send(this.makeChannel(username), { body });	
 			this.users[username].currentProblem++;
+			this.users[username].awaitingProblem = true;
+			if(username in this.timers) {
+				clearTimeout(this.timers[username]);
+				delete this.timers[username];
+			}
+
 			return;
 		} else {
 

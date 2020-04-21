@@ -4,6 +4,10 @@ export declare type ProblemList = {
 
 type StringOrNumber = string | number
 
+export declare interface TimerList {
+	[username: string]: ReturnType<typeof setTimeout>
+}
+
 interface ProblemDescription {
 	testCaseInputs: any[];
 	expectedOutputs: any;
@@ -18,14 +22,15 @@ export declare interface UserList {
 }
 
 export declare interface UserData {
-	currentProblem: number | null; 
+	currentProblem: number; 
 	lastSolutionReceivedTime: [number, number] | null; 
+	awaitingProblem: boolean;
 }
 
 export declare interface SolutionGrade {
+	humanReadableMemoryUsage: string;
 	userScore: number;
 	maxScore: number;
 	bytesUsed: number;
 	solveTimeMilliseconds: number;
-
 }
