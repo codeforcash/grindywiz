@@ -4,6 +4,7 @@ import { Lambda } from 'aws-sdk';
 const fs = require('fs');
 const { getKeybaseCredentials } = require('./secret');
 import SolutionGrader from './solution-grader';
+import StateManager from './state-manager';
 
 import { MsgSummary, ChatChannel } from './node_modules/keybase-bot/lib/types/chat1/index.js'
 import { TimerList, SolutionGrade, UserList, ProblemList, UserData } from './types/grindywiz'
@@ -35,11 +36,14 @@ export default class Bot {
 	problems: ProblemList;
 	lambdaFunctionName: string;
 	solutionGrader: SolutionGrader;
+	stateManager: StateManager;
 	lambda: Lambda;
 
 	constructor() {
 		this.bot = new KeybaseBot();	
+		this.stateManager = new StateManager(this.bot, 'keybase');
 		this.users = {};
+		this.timers = {};
 		const problemsJson = `${process.cwd()}/problems.json`;
 		console.log({problemsJson})
 		try {
@@ -56,12 +60,14 @@ export default class Bot {
 				console.error('Error fetching bot credentials');
 				process.exit();
 			});
+
 			await this.bot.init(creds.username, creds.paperkey, {verbose: false})
 			console.log(`Bot is logged in as ${this.bot.myInfo().username}`)
-			const message = {
-				body: `Bot restarted.`,
-			}
-			await this.bot.chat.send(this.makeChannel('zackburt'), message)
+			this.users = await this.stateManager.loadUserState();
+			setInterval(() => {
+				this.stateManager.setUserState(this.users);
+			}, 1000 * 60);
+			await this.bot.chat.send(this.makeChannel('zackburt'), { body: 'Bot restarted' })
 			console.log('Init message sent!')
 			await this.bot.chat.watchAllChannelsForNewMessages(this.onMessage.bind(this), this.onError)
 		} catch (error) {
@@ -177,6 +183,7 @@ export default class Bot {
 	}
 
 	makeChannel(username): ChatChannel {
+
 		return {
 				name: username + ',' + this.bot.myInfo().username, 
 				public: false, 
