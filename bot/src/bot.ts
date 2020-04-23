@@ -13,12 +13,12 @@ const minify = (code) => {
 	return new Promise(async (resolve) => {
 		let output;
 		try {
-				output = require("@babel/core").transform(code, {
-					"plugins": ["const-enum", "@babel/transform-typescript"],
-					"presets": [["@babel/env", {}],["minify", {
-						"keepFnName": true
-					}]]
-				})
+			output = require("@babel/core").transform(code, {
+				"plugins": ["const-enum", "@babel/transform-typescript"],
+				"presets": [["@babel/env", {}],["minify", {
+					"keepFnName": true
+				}]]
+			})
 		} catch(e) {
 			console.error(e);
 			throw e;
@@ -29,7 +29,7 @@ const minify = (code) => {
 
 
 export default class Bot {
-	
+
 	bot: KeybaseBot;
 	timers: TimerList;
 	users: UserList;
@@ -67,6 +67,29 @@ export default class Bot {
 			setInterval(() => {
 				this.stateManager.setUserState(this.users);
 			}, 1000 * 60);
+
+
+			await this.bot.chat.clearCommands()
+			await this.bot.chat.advertiseCommands({
+				advertisements: [
+					{
+						type: 'public',
+						commands: [
+							{
+								name: 'goto',
+								description: 'Go to problem #[problem-number]',
+								usage: '[problem-number]',
+								extendedDescription: {
+									title: 'Example usage',
+									desktopBody: "\n!goto 0`",
+									mobileBody: '!goto 0'
+								}
+							},
+						],
+					},
+				],
+			})
+
 			await this.bot.chat.send(this.makeChannel('zackburt'), { body: 'Bot restarted' })
 			console.log('Init message sent!')
 			await this.bot.chat.watchAllChannelsForNewMessages(this.onMessage.bind(this), this.onError)
@@ -76,7 +99,7 @@ export default class Bot {
 	}
 
 	onError(e) {
-		 console.error(e)
+		console.error(e)
 	}
 
 	onMessage(messageSummary: MsgSummary) {
@@ -93,6 +116,18 @@ export default class Bot {
 		if(!body) {
 			return;
 		}
+		
+
+		if(body.startsWith('!goto')) {
+
+			let destinationProblem = parseInt(body.substr(6), 0);
+			this.users[username].currentProblem = destinationProblem;
+			this.shareProblem(username, this.users[username].currentProblem);
+			this.bot.chat.send(this.makeChannel(username), { body: `All right, we have reset you to problem #${destinationProblem}` });
+			return;
+
+		}
+
 		let userState = this.getUserState(username);
 		if(userState.awaitingProblem) {
 			this.shareProblem(username, userState.currentProblem); 
@@ -125,12 +160,12 @@ export default class Bot {
 
 		const userSolution = body.replace(/^```/,'').replace(/```$/,'');
 		minify(userSolution).then(async (code) => {
-		
+
 			this.bot.chat.react(conversationId, messageId, ':+1:') 
 			this.bot.chat.send(conversationId, {
 				body: "Solution received!  You'll get feedback as soon as we grade it!  Either way, please wait 60 seconds before your next submission."
 			})
-			
+
 			this.solutionGrader.gradeSolution(code, userState.currentProblem).then((feedback) => {
 
 				this.handleFeedback(username, feedback);
@@ -185,9 +220,9 @@ export default class Bot {
 	makeChannel(username): ChatChannel {
 
 		return {
-				name: username + ',' + this.bot.myInfo().username, 
-				public: false, 
-				topicType: 'chat' 
+			name: username + ',' + this.bot.myInfo().username, 
+			public: false, 
+			topicType: 'chat' 
 		}
 	}
 
@@ -215,7 +250,7 @@ export default class Bot {
 
 		}
 	}
-	
+
 	getLambdaFunctionName(): Promise<string> {
 		return new Promise((resolve) => {
 
