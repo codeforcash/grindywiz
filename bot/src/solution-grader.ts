@@ -76,6 +76,7 @@ export default class SolutionGrader {
 				console.log({data});
 
 				const logs = Buffer.from(data.LogResult, 'base64').toString(); 
+				console.log({logs});
 				const memoryUsedMatch = logs.match(/\tMax Memory Used:\s(\S+\s\S+)\t\n/)
 				let bytesUsed, humanReadableMemoryUsage;
 				if(memoryUsedMatch) { 

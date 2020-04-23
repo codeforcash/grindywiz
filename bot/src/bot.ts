@@ -78,13 +78,18 @@ export default class Bot {
 							{
 								name: 'goto',
 								description: 'Go to problem #[problem-number]',
-								usage: '[problem-number]',
+								usage: '!goto [problem-number]',
 								extendedDescription: {
 									title: 'Example usage',
 									desktopBody: "\n!goto 0`",
 									mobileBody: '!goto 0'
 								}
 							},
+							{
+								name: 'leaderboard',
+								description: 'List the people with the best solutions',
+								usage: '!leaderboard'
+							}
 						],
 					},
 				],
@@ -102,6 +107,68 @@ export default class Bot {
 		console.error(e)
 	}
 
+
+	shareLeaderboard() {
+
+		const leaderboard = {
+
+		};
+		for(const username in this.users) {
+			const solutions = this.users[username].solutions;
+			for(const problemId in solutions) {
+
+				if(leaderboard[problemId] === void 0) {
+					leaderboard[problemId] = {
+						bestCPU: {
+							value: Infinity,
+						},
+						bestMemory: {
+							value: Infinity,
+						}
+					};
+				}
+
+
+				const solution = solutions[problemId];
+
+				if(solution.bestCPU.executionTimeMilliseconds < leaderboard[problemId].bestCPU.value) {
+					leaderboard[problemId].bestCPU = {
+						value: solution.bestCPU.executionTimeMilliseconds,
+						username
+					}
+				}
+				if(solution.bestMemory.memoryFootprintBytes < leaderboard[problemId].bestMemory.value) {
+					leaderboard[problemId].bestMemory = {
+						value: solution.bestMemory.memoryFootprintBytes, 
+						username
+					}
+				}
+			}
+		
+		}
+		return JSON.stringify(leaderboard);
+
+	}
+
+	static formatLeaderboard(leaderboardJSON) {
+
+
+		const leaderboard = JSON.parse(leaderboardJSON);
+		let response = `Leaderboard\n`;
+		for(const problemId in leaderboard) {
+			
+			const {bestCPU, bestMemory} = leaderboard[problemId];
+			response += "\n";
+			response += `>Problem ${problemId}\n\n`;
+			response += `Best CPU: @${bestCPU.username} with ${bestCPU.value}ms`;
+			response += "\n";
+			response += `Best memory: @${bestMemory.username} with ${bestMemory.value} bytes`; 
+
+		}
+		return response;
+
+	}
+
 	onMessage(messageSummary: MsgSummary) {
 		const { id: messageId, content, conversationId, sender } = messageSummary;
 		const { username } = sender;
@@ -116,7 +183,7 @@ export default class Bot {
 		if(!body) {
 			return;
 		}
-		
+
 
 		if(body.startsWith('!goto')) {
 
@@ -126,6 +193,10 @@ export default class Bot {
 			this.bot.chat.send(this.makeChannel(username), { body: `All right, we have reset you to problem #${destinationProblem}` });
 			return;
 
+		}
+		if(body.startsWith('!leaderboard')) {
+			this.bot.chat.send(this.makeChannel(username), { body: Bot.formatLeaderboard(this.shareLeaderboard()) });
+			return;
 		}
 
 		let userState = this.getUserState(username);
@@ -159,7 +230,7 @@ export default class Bot {
 		}, 60 * 1000);
 
 		const userSolution = body.replace(/^```/,'').replace(/```$/,'');
-		minify(userSolution).then(async (code) => {
+		minify(userSolution).then(async (code: string) => {
 
 			this.bot.chat.react(conversationId, messageId, ':+1:') 
 			this.bot.chat.send(conversationId, {
@@ -168,7 +239,7 @@ export default class Bot {
 
 			this.solutionGrader.gradeSolution(code, userState.currentProblem).then((feedback) => {
 
-				this.handleFeedback(username, feedback);
+				this.handleFeedback(username, code, feedback);
 
 			}).catch((e) => {
 
@@ -196,7 +267,8 @@ export default class Bot {
 			this.users[username] = {
 				currentProblem: 0,
 				lastSolutionReceivedTime: null,
-				awaitingProblem: true 
+				awaitingProblem: true,
+				solutions: {}
 			}
 		}
 		return this.users[username];
@@ -226,15 +298,54 @@ export default class Bot {
 		}
 	}
 
-	async handleFeedback(username: string, feedback: SolutionGrade) {
+	updateHighScore(username: string, code: string, bytesUsed: number, solveTimeMilliseconds: number, currentProblem: number) {
+
+		if(!('solutions' in this.users[username])) {
+			this.users[username].solutions = {}
+		}
+		if(!(currentProblem in this.users[username].solutions)) {
+			this.users[username].solutions[currentProblem] = {
+				bestMemory: {
+					minifiedCode: code,
+					memoryFootprintBytes: bytesUsed
+				},
+				bestCPU: {
+					minifiedCode: code,
+					executionTimeMilliseconds: solveTimeMilliseconds
+				}
+			}
+			return;
+		}
+
+		const {bestMemory, bestCPU} = this.users[username].solutions[currentProblem];
+
+		if(bytesUsed < bestMemory.memoryFootprintBytes) {
+			this.users[username].solutions[currentProblem].bestMemory = {
+				minifiedCode: code,
+				memoryFootprintBytes: bytesUsed 
+			}
+		}
+		if(solveTimeMilliseconds < bestCPU.executionTimeMilliseconds) {
+			this.users[username].solutions[currentProblem].bestCPU = {
+				minifiedCode: code,
+				executionTimeMilliseconds: solveTimeMilliseconds
+			}
+		}
+	}
+
+
+
+	async handleFeedback(username: string, code: string, feedback: SolutionGrade) {
 		let body = '';
 		if(feedback.userScore === feedback.maxScore) {
 			body = body.concat("Well done! A perfect score.\n\n");
 			body = body.concat(`Memory used: \`${feedback.humanReadableMemoryUsage}\` (\`${feedback.bytesUsed} bytes\`) – including overhead\n`);
 			body = body.concat(`Solve time: \`${feedback.solveTimeMilliseconds}ms\``)
+			this.updateHighScore(username, code, feedback.bytesUsed, feedback.solveTimeMilliseconds, this.users[username].currentProblem);
 			this.bot.chat.send(this.makeChannel(username), { body });	
 			this.users[username].currentProblem++;
 			this.users[username].awaitingProblem = true;
+
 			if(username in this.timers) {
 				clearTimeout(this.timers[username]);
 				delete this.timers[username];

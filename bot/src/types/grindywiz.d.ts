@@ -8,6 +8,28 @@ export declare interface TimerList {
 	[username: string]: ReturnType<typeof setTimeout>
 }
 
+
+
+interface BestMemorySolution {
+	minifiedCode: string;
+	memoryFootprintBytes: number;
+}
+
+interface BestCPUSolution {
+	minifiedCode: string;
+	executionTimeMilliseconds: number;
+}
+
+
+interface SolutionDescription {
+	bestMemory: BestMemorySolution,
+	bestCPU: BestCPUSolution
+}
+
+interface SolutionList {
+	[key: number]: SolutionDescription;
+}
+
 interface ProblemDescription {
 	testCaseInputs: any[];
 	expectedOutputs: any;
@@ -25,6 +47,7 @@ export declare interface UserData {
 	currentProblem: number; 
 	lastSolutionReceivedTime: [number, number] | null; 
 	awaitingProblem: boolean;
+	solutions: SolutionList;
 }
 
 export declare interface SolutionGrade {
