@@ -58,6 +58,8 @@ const getKeybaseCredentials = () => {
 
 		secretsManager.getSecretValue({SecretId: keybaseCredentialsSecretName}, function(err, data) {
 			if (err) {
+				console.error('Error fetching secretID: ', keybaseCredentialsSecretName, {err});
+
 				if (err.code === 'DecryptionFailureException')
 				// Secrets Manager can't decrypt the protected secret text using the provided KMS key.
 				// Deal with the exception here, and/or rethrow at your discretion.
@@ -87,7 +89,10 @@ const getKeybaseCredentials = () => {
 				}
 			}
 
-			const keybaseSecret = JSON.parse(secret);
+
+
+			console.log('Secret data: ', { data });
+			const keybaseSecret = JSON.parse(data.SecretString);
 			const { username, paperkey } = keybaseSecret;
 			
 			resolve({username, paperkey})
